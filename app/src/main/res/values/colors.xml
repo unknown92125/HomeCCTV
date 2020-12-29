@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!--    <color name="colorPrimary">#008577</color>-->
+<!--    <color name="colorPrimaryDark">#00574B</color>-->
+<!--    <color name="colorAccent">#D81B60</color>-->
+
+    <color name="colorPrimary">#82B1FF</color>
+    <color name="colorPrimaryDark">#448AFF</color>
+    <color name="colorAccent">#FF80AB</color>
+
+    <color name="background">#121212</color>
+    <color name="surface">#303030</color>
+
+    <color name="onBackground87">#DEFFFFFF</color>
+    <color name="onBackground60">#99FFFFFF</color>
+    <color name="onBackground38">#61FFFFFF</color>
+    <color name="onSurface87">#DEFFFFFF</color>
+    <color name="onSurface60">#99FFFFFF</color>
+    <color name="onSurface38">#61FFFFFF</color>
+
+    <color name="whiteTrans">#80FFFFFF</color>
+    <color name="red">#E53935</color>
+
+</resources>

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="c"
+            type="com.unknown.homecctv.C" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/background"
+        android:orientation="vertical"
+        android:padding="8dp"
+        tools:context=".CCTVActivity">
+
+        <ImageView
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_camera_white_24dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:gravity="center"
+            android:text="CCTV 모드입니다\n\nCCTV를 확인하려면 다른 스마트폰에서 사용자 모드를 선택 후 아래의 CCTV 아이디와 비밀번호를 입력하세요"
+            android:textColor="@color/onBackground87"
+            android:textSize="16sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="CCTV ID : "
+                android:textColor="@color/onBackground60" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{c.cctvId}"
+                android:textColor="@color/colorPrimary" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="CCTV 비밀번호 : "
+                android:textColor="@color/onBackground60" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{c.liveCCTVPw}"
+                android:textColor="@color/colorPrimary" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CCTV 비밀번호 변경"
+            android:textColor="@color/colorPrimary" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_rect_background"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/et__cctv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:digits="abcdefghijklmnopqrstuvwxyz0123456789"
+                android:hint="새 비밀번호"
+                android:inputType="text"
+                android:maxLength="12"
+                android:padding="8dp"
+                android:imeOptions="actionDone"
+                android:textColor="@color/onBackground60"
+                android:textColorHint="@color/onBackground38" />
+
+            <Button
+                android:id="@+id/bt_ok__cctv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:background="@drawable/rounded_rect_background_primary"
+                android:text="확인"
+                android:textColor="@color/background" />
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/bt_finish__cctv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:background="@drawable/rounded_rect_background_red"
+            android:text="CCTV 종료"
+            android:textColor="@color/background" />
+
+    </LinearLayout>
+</layout>

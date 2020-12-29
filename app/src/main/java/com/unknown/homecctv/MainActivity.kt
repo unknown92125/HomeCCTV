@@ -79,7 +79,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun startUserActivity() {
         pref.edit().putBoolean(C.PREF_IS_CCTV, false).apply()
-        startActivity(Intent(this, CCTVModeActivity::class.java))
+        startActivity(Intent(this, CCTVActivity::class.java))
 
     }
 
@@ -91,7 +91,7 @@ class MainActivity : AppCompatActivity() {
 
         } else {
             C.cctvId = cctvId
-            C.cctvPw = pref.getString(C.PREF_CCTV_PW, "").toString()
+            C.liveCCTVPw.value = pref.getString(C.PREF_CCTV_PW, "").toString()
 
             getFcmToken()
 
@@ -146,7 +146,7 @@ class MainActivity : AppCompatActivity() {
                     pref.edit().putString(C.PREF_CCTV_ID, cctvId).apply()
                     pref.edit().putString(C.PREF_CCTV_PW, cctvPw).apply()
                     C.cctvId = cctvId
-                    C.cctvPw = cctvPw
+                    C.liveCCTVPw.value = cctvPw
 
                     getFcmToken()
                 }
@@ -178,7 +178,7 @@ class MainActivity : AppCompatActivity() {
         val mDatabaseTime = mDatabaseCCTV.child(C.cctvId).child("time")
         mDatabaseTime.setValue(Calendar.getInstance().timeInMillis)
 
-        startActivity(Intent(this, CCTVModeActivity::class.java))
+        startActivity(Intent(this, CCTVActivity::class.java))
 
     }
 

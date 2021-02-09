@@ -10,5 +10,11 @@
     <string name="need_permission">앱을 사용하기 위해 권한이 필요합니다. 확인 버튼을 누르면 설정화면으로 이동합니다.</string>
     <string name="input_new_pw">새 비밀번호를 입력해 주세요</string>
     <string name="pw_changed">비밀번호가 변경되었습니다</string>
+    <string name="delete">삭제</string>
+    <string name="edit">수정</string>
+    <string name="connect">연결</string>
+    <string name="add_cctv">CCTV 추가</string>
+    <string name="check_id_in_cctv_mode">CCTV로 사용할 스마트폰에서 CCTV 모드로 들어가면 아이디와 비밀번호를 확인할 수 있습니다</string>
+    <string name="press_ok_to_delete">확인 버튼을 누르면 선택한 CCTV를 목록에서 삭제합니다.</string>
 
 </resources>

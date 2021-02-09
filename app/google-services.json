@@ -1,20 +1,20 @@
 {
   "project_info": {
-    "project_number": "224906949606",
-    "project_id": "homecctv-462c2",
-    "storage_bucket": "homecctv-462c2.appspot.com"
+    "project_number": "196102824473",
+    "project_id": "homecctv-12364",
+    "storage_bucket": "homecctv-12364.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:224906949606:android:2c955f5ab781da2c1e5c27",
+        "mobilesdk_app_id": "1:196102824473:android:db03d91c705dda3e1fc088",
         "android_client_info": {
           "package_name": "com.unknown.homecctv"
         }
       },
       "oauth_client": [
         {
-          "client_id": "224906949606-94a8oa98f6ok2203qucch7ibjpjt4njg.apps.googleusercontent.com",
+          "client_id": "196102824473-7elle8jbbrcg2kg1318b4acl9he88tre.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.unknown.homecctv",
@@ -22,20 +22,20 @@
           }
         },
         {
-          "client_id": "224906949606-buqbef5p4qjr3hbjh7ea57oqmh0avgai.apps.googleusercontent.com",
+          "client_id": "196102824473-rjn522t4got9ilglua772m6hjg001d11.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyC4es8yHL6cfCByD_r3TSOuAQ6iHLTyxY4"
+          "current_key": "AIzaSyAOic5gVfS1uVcHEidOLQXQeuLLP23lsi4"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "224906949606-buqbef5p4qjr3hbjh7ea57oqmh0avgai.apps.googleusercontent.com",
+              "client_id": "196102824473-rjn522t4got9ilglua772m6hjg001d11.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

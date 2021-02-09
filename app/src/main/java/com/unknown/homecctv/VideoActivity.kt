@@ -1,6 +1,5 @@
 package com.unknown.homecctv
 
-import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -8,27 +7,26 @@ import android.content.IntentFilter
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
-import android.media.MediaRecorder
 import android.os.Build
+import android.os.Bundle
+import android.os.CountDownTimer
 import android.os.Handler
-import android.os.IBinder
 import android.util.Log
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.unknown.homecctv.viewmodels.CCTVViewModel
+import kotlinx.android.synthetic.main.activity_video.*
 import org.json.JSONObject
 import org.webrtc.*
-import org.webrtc.audio.AudioDeviceModule
-import org.webrtc.audio.JavaAudioDeviceModule
 
-class CCTVService : Service(), JavaAudioDeviceModule.SamplesReadyCallback {
+class VideoActivity : AppCompatActivity() {
 
     companion object {
-        const val TAG = "myLog.CCTVService"
-        var isRunning = false
+        const val TAG = "myLog.VideoA"
     }
 
     private val mContext by lazy { applicationContext }
@@ -42,7 +40,7 @@ class CCTVService : Service(), JavaAudioDeviceModule.SamplesReadyCallback {
     private val audioTrackID = "AudioTrack1"
     private val localMediaStreamLabel = "MediaStream1"
 
-    private var isCaller = false
+    private var isCaller = true
 
     private var isPeerConnected = false
 
@@ -52,6 +50,7 @@ class CCTVService : Service(), JavaAudioDeviceModule.SamplesReadyCallback {
     private lateinit var sdpConstraints: MediaConstraints
 
     private lateinit var remoteAudioTrack: AudioTrack
+    private lateinit var remoteVideoTrack: VideoTrack
     private lateinit var localVideoTrack: VideoTrack
     private lateinit var mediaStream: MediaStream
 
@@ -61,31 +60,34 @@ class CCTVService : Service(), JavaAudioDeviceModule.SamplesReadyCallback {
     private var videoCapturer: VideoCapturer? = null
     private var dataChannel: DataChannel? = null
 
-    private val cctvID by lazy { CCTVViewModel.cctvId }
+    private lateinit var cctvID: String
+    private lateinit var cctvPW: String
 
-    override fun onBind(intent: Intent): IBinder? {
-        return null
-    }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_video)
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.e(TAG, "onStartCommand")
-        isRunning = true
+        cctvID = intent.getStringExtra("id") ?: ""
+        cctvPW = intent.getStringExtra("pw") ?: ""
 
         val filter = IntentFilter()
-        filter.addAction(C.ACTION_CCTV)
+        filter.addAction(C.ACTION_USER)
         LocalBroadcastManager.getInstance(this).registerReceiver(msgReceiver, filter)
 
+        checkTimer.cancel()
+        checkTimer.start()
         createPeerConnection()
 
-        return START_NOT_STICKY
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        disconnectAll()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.e(TAG, "onDestroy")
-
-        isRunning = false
-
         try {
             LocalBroadcastManager.getInstance(this).unregisterReceiver(msgReceiver)
         } catch (e: Exception) {
@@ -102,16 +104,20 @@ class CCTVService : Service(), JavaAudioDeviceModule.SamplesReadyCallback {
             Log.e(TAG, "msgReceiver : what:$what msg:$msg")
             Log.e(TAG, "STATUS : <<<<<<<<<< ${C.status} >>>>>>>>>>")
 
-//            when (what) {
-//                C.CONNECT_CCTV -> {
-//                    createPeerConnection()
-//                }
-//                C.DISCONNECT_CCTV -> {
-//                    disconnectAll()
-//                }
-//            }
         }
     }
+
+    private val checkTimer = object : CountDownTimer(10000, 1000){
+        override fun onFinish() {
+            Toast.makeText(mContext, "CCTV 연결에 실패하였습니다. 아이디 또는 비밀번호를 확인 후 다시 시도해 주세요", Toast.LENGTH_LONG).show()
+            finish()
+        }
+
+        override fun onTick(millisUntilFinished: Long) {}
+
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
 
     private fun createPeerConnection() {
         Log.e(TAG, "createPeerConnection")
@@ -135,15 +141,15 @@ class CCTVService : Service(), JavaAudioDeviceModule.SamplesReadyCallback {
             val peerConnectionOption = PeerConnectionFactory.Options()
             peerConnectionOption.disableNetworkMonitor = true
 
-            val adm = createJavaAudioDevice() as AudioDeviceModule
+//            val adm = createJavaAudioDevice() as AudioDeviceModule
 
             peerConnectionFactory = PeerConnectionFactory.builder()
                 .setOptions(peerConnectionOption)
-                .setAudioDeviceModule(adm)
+//                .setAudioDeviceModule(adm)
                 .setVideoEncoderFactory(defaultVideoEncoderFactory)
                 .setVideoDecoderFactory(defaultVideoDecoderFactory)
                 .createPeerConnectionFactory()
-            adm.release()
+//            adm.release()
 
             val iceServers = ArrayList<PeerConnection.IceServer>()
             val iceBuilder = PeerConnection.IceServer.builder("stun:stun1.l.google.com:19302")
@@ -228,6 +234,15 @@ class CCTVService : Service(), JavaAudioDeviceModule.SamplesReadyCallback {
                     peerConnectionFactory!!.createVideoTrack(videoTrackID, videoSource)
 
                 videoCapturer?.startCapture(1920, 1080, 30)
+            } else {
+
+                try {
+                    svr_remote__video.init(rootEglBase?.eglBaseContext, null)
+                    svr_remote__video.setEnableHardwareScaler(true)
+                    svr_remote__video.disableFpsReduction()
+                } catch (e: Exception) {
+                    Log.e(TAG, "svr_remote__video already initiated")
+                }
             }
 
             val audioSource = peerConnectionFactory?.createAudioSource(sdpConstraints)
@@ -266,9 +281,14 @@ class CCTVService : Service(), JavaAudioDeviceModule.SamplesReadyCallback {
                     val data = s.value.toString()
 
                     if (isCaller && data == "joined" && !isLocalSet) {
+                        isLocalSet = true//todo
+
                         createOffer()
 
                     } else if (!isCaller && key == "offer" && !isRemoteSet) {
+                        isLocalSet = true//todo
+                        isRemoteSet = true//todo
+
                         peerConnection?.setRemoteDescription(object : MySdpObserver() {
                             override fun onSetSuccess() {
                                 Log.e(TAG, "setRemoteDescription..onSetSuccess")
@@ -279,6 +299,8 @@ class CCTVService : Service(), JavaAudioDeviceModule.SamplesReadyCallback {
                         }, SessionDescription(SessionDescription.Type.OFFER, data))
 
                     } else if (isCaller && key == "answer" && !isRemoteSet) {
+                        isRemoteSet = true//todo
+
                         peerConnection?.setRemoteDescription(object : MySdpObserver() {
                             override fun onSetSuccess() {
                                 Log.e(TAG, "setRemoteDescription..onSetSuccess")
@@ -311,7 +333,7 @@ class CCTVService : Service(), JavaAudioDeviceModule.SamplesReadyCallback {
         })
 
         if (isCaller) {
-//            FCM.sendToCCTV("${C.CONNECT_CCTV}${C.DIVIDER}$cctvPW", cctvID)
+            FCM.sendToCCTV("${C.CONNECT_CCTV}${C.DIVIDER}$cctvPW", cctvID)
         } else {
             mDatabaseRoom.child("cctv").setValue("joined")
         }
@@ -398,54 +420,54 @@ class CCTVService : Service(), JavaAudioDeviceModule.SamplesReadyCallback {
         }, sdpConstraints)
     }
 
-    private fun createJavaAudioDevice(): AudioDeviceModule? {
-        return JavaAudioDeviceModule.builder(mContext)
-            .setSamplesReadyCallback(this)
-            .setAudioSource(MediaRecorder.AudioSource.VOICE_COMMUNICATION)
-            .setAudioRecordErrorCallback(object : JavaAudioDeviceModule.AudioRecordErrorCallback {
-                override fun onWebRtcAudioRecordInitError(p0: String?) {
-                    Log.e(TAG, "onWebRtcAudioRecordInitError:$p0")
-                }
-
-                override fun onWebRtcAudioRecordError(p0: String?) {
-                    Log.e(TAG, "onWebRtcAudioRecordError:$p0")
-                }
-
-                override fun onWebRtcAudioRecordStartError(
-                    p0: JavaAudioDeviceModule.AudioRecordStartErrorCode?,
-                    p1: String?
-                ) {
-                    Log.e(TAG, "onWebRtcAudioRecordStartError:$p1")
-                }
-            })
-            .setAudioTrackErrorCallback(object : JavaAudioDeviceModule.AudioTrackErrorCallback {
-                override fun onWebRtcAudioTrackError(p0: String?) {
-                    Log.e(TAG, "onWebRtcAudioTrackError:$p0")
-                }
-
-                override fun onWebRtcAudioTrackStartError(
-                    p0: JavaAudioDeviceModule.AudioTrackStartErrorCode?,
-                    p1: String?
-                ) {
-                    Log.e(TAG, "onWebRtcAudioTrackStartError")
-                }
-
-                override fun onWebRtcAudioTrackInitError(p0: String?) {
-                    Log.e(TAG, "onWebRtcAudioTrackInitError:$p0")
-                }
-            })
-            .createAudioDeviceModule()
-    }
-
-
-    override fun onWebRtcAudioRecordSamplesReady(samples: JavaAudioDeviceModule.AudioSamples?) {
-//        samples?.let {
-//            if (it.data.isNotEmpty()) {
-//                encoder?.onLocalAudioSamplesReady(it.data)
-//            }
-//        }
-
-    }
+//    private fun createJavaAudioDevice(): AudioDeviceModule? {
+//        return JavaAudioDeviceModule.builder(mContext)
+//            .setSamplesReadyCallback(this)
+//            .setAudioSource(MediaRecorder.AudioSource.VOICE_COMMUNICATION)
+//            .setAudioRecordErrorCallback(object : JavaAudioDeviceModule.AudioRecordErrorCallback {
+//                override fun onWebRtcAudioRecordInitError(p0: String?) {
+//                    Log.e(TAG, "onWebRtcAudioRecordInitError:$p0")
+//                }
+//
+//                override fun onWebRtcAudioRecordError(p0: String?) {
+//                    Log.e(TAG, "onWebRtcAudioRecordError:$p0")
+//                }
+//
+//                override fun onWebRtcAudioRecordStartError(
+//                    p0: JavaAudioDeviceModule.AudioRecordStartErrorCode?,
+//                    p1: String?
+//                ) {
+//                    Log.e(TAG, "onWebRtcAudioRecordStartError:$p1")
+//                }
+//            })
+//            .setAudioTrackErrorCallback(object : JavaAudioDeviceModule.AudioTrackErrorCallback {
+//                override fun onWebRtcAudioTrackError(p0: String?) {
+//                    Log.e(TAG, "onWebRtcAudioTrackError:$p0")
+//                }
+//
+//                override fun onWebRtcAudioTrackStartError(
+//                    p0: JavaAudioDeviceModule.AudioTrackStartErrorCode?,
+//                    p1: String?
+//                ) {
+//                    Log.e(TAG, "onWebRtcAudioTrackStartError")
+//                }
+//
+//                override fun onWebRtcAudioTrackInitError(p0: String?) {
+//                    Log.e(TAG, "onWebRtcAudioTrackInitError:$p0")
+//                }
+//            })
+//            .createAudioDeviceModule()
+//    }
+//
+//
+//    override fun onWebRtcAudioRecordSamplesReady(samples: JavaAudioDeviceModule.AudioSamples?) {
+////        samples?.let {
+////            if (it.data.isNotEmpty()) {
+////                encoder?.onLocalAudioSamplesReady(it.data)
+////            }
+////        }
+//
+//    }
 
     open class MySdpObserver : SdpObserver {
         val tag = "MySdpObserver"
@@ -493,14 +515,14 @@ class CCTVService : Service(), JavaAudioDeviceModule.SamplesReadyCallback {
                 remoteAudioTrack = mediaStream.audioTracks.first()
                 remoteAudioTrack.setEnabled(true)
             }
-//            if (isCaller && mediaStream.videoTracks.size > 0) {
-//                remoteVideoTrack = mediaStream.videoTracks.first()
-//                remoteVideoTrack.setEnabled(true)
-//                remoteVideoTrack.addSink(svr_remote__video)
-////                remoteVideoTrack.addSink {
-////                    svr_remote__home.onFrame(VideoFrame(it.buffer, it.rotation + 270, -1))
-////                }
-//            }
+            if (isCaller && mediaStream.videoTracks.size > 0) {
+                remoteVideoTrack = mediaStream.videoTracks.first()
+                remoteVideoTrack.setEnabled(true)
+                remoteVideoTrack.addSink(svr_remote__video)
+//                remoteVideoTrack.addSink {
+//                    svr_remote__home.onFrame(VideoFrame(it.buffer, it.rotation + 270, -1))
+//                }
+            }
 
         }
 
@@ -555,6 +577,8 @@ class CCTVService : Service(), JavaAudioDeviceModule.SamplesReadyCallback {
             when (p0) {
                 PeerConnection.IceConnectionState.CONNECTED -> {
                     C.status = C.CONNECTED
+
+                    checkTimer.cancel()
 
                     getAudioFocus()
 
@@ -641,6 +665,10 @@ class CCTVService : Service(), JavaAudioDeviceModule.SamplesReadyCallback {
                 rootEglBase = null
             }
 
+            if (isCaller){
+                svr_remote__video.release()
+            }
+
             peerConnection?.let {
                 it.close()
                 it.dispose()
@@ -664,7 +692,7 @@ class CCTVService : Service(), JavaAudioDeviceModule.SamplesReadyCallback {
 
             isDisconnecting = false
 
-            stopSelf()
+            finish()
         }
 
     }
@@ -696,4 +724,6 @@ class CCTVService : Service(), JavaAudioDeviceModule.SamplesReadyCallback {
         audioManager.isSpeakerphoneOn = true
 
     }
+
+
 }

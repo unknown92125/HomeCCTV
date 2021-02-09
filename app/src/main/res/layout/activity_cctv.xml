@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-
         <variable
-            name="c"
-            type="com.unknown.homecctv.C" />
+            name="cvm"
+            type="com.unknown.homecctv.viewmodels.CCTVViewModel" />
     </data>
 
     <LinearLayout
@@ -49,7 +49,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{c.cctvId}"
+                android:text="@{cvm.cctvIdLive}"
                 android:textColor="@color/colorPrimary" />
 
         </LinearLayout>
@@ -69,7 +69,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{c.liveCCTVPw}"
+                android:text="@{cvm.cctvPwLive}"
                 android:textColor="@color/colorPrimary" />
 
         </LinearLayout>

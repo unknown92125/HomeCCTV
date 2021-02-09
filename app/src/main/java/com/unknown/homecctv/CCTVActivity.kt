@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.unknown.homecctv.databinding.ActivityCctvBinding
+import com.unknown.homecctv.viewmodels.CCTVViewModel
 import kotlinx.android.synthetic.main.activity_cctv.*
 
 class CCTVActivity : AppCompatActivity() {
@@ -14,19 +15,21 @@ class CCTVActivity : AppCompatActivity() {
         const val TAG = "myLog.CCTVActivity"
     }
 
+    private val mContext by lazy { applicationContext }
     private val mActivity by lazy { this }
     private val pref by lazy { getSharedPreferences(C.PREF_DATA, Context.MODE_PRIVATE) }
+    private val cctvViewModel by lazy { CCTVViewModel(application) }
 
     private lateinit var binding: ActivityCctvBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_cctv)
+//        setContentView(R.layout.activity_cctv)
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_cctv)
         binding.apply {
             lifecycleOwner = mActivity
-            c = C
+            cvm = cctvViewModel
 
             btOkCctv.setOnClickListener {
                 changePassword()
@@ -43,8 +46,7 @@ class CCTVActivity : AppCompatActivity() {
             Toast.makeText(mActivity, getString(R.string.input_new_pw), Toast.LENGTH_SHORT).show()
         } else {
             pref.edit().putString(C.PREF_CCTV_PW, newPw).apply()
-            C.liveCCTVPw.value = newPw
-
+            cctvViewModel.setCCTVPw(newPw)
             et__cctv.setText("")
 
             Toast.makeText(mActivity, getString(R.string.pw_changed), Toast.LENGTH_SHORT).show()
